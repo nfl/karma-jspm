@@ -23,6 +23,21 @@
 
     System.config({ baseURL: 'base' });
 
+    // FIXME: Possibly not needed in jspm 0.17
+    // store the old normalization function
+    var systemNormalize = System.normalize;
+
+    // override the normalization function
+    System.normalize = function (name, parentName, parentAddress) {
+        return systemNormalize.call(this, name, parentName, parentAddress).then(function (url) {
+            if ((/\.(?:eot|gif|jpe?g|otf|png|svg|ttf|woff)\.js$/).test(url)) {
+                return url.replace(/\.js$/, "");
+            }
+
+            return url;
+        });
+    };
+
     var promises = [],
       stripExtension = typeof karma.config.jspm.stripExtension === 'boolean' ? karma.config.jspm.stripExtension : true;
 
