@@ -85,9 +85,11 @@ module.exports = function(files, basePath, jspm, client) {
 
   // Allow Karma to serve all files within jspm_packages.
   // This allows jspm/SystemJS to load them
-  var jspmPattern = createServedPattern(packagesPath + '**/*');
-  jspmPattern.watched = false;
-  files.unshift(jspmPattern);
+  if (jspm.servePackages) {
+    var jspmPattern = createServedPattern(packagesPath + '**/*');
+    jspmPattern.watched = false;
+    files.unshift(jspmPattern);
+  }
 
   // Add SystemJS loader and jspm config
   function getLoaderPath(fileName){
