@@ -110,8 +110,15 @@ module.exports = function(files, basePath, jspm, client) {
   // 2. Expand out and globs to end up with actual files for jspm to load.
   //    Store that in client.jspm.expandedFiles
   client.jspm.expandedFiles = flatten(jspm.loadFiles.map(function(file){
+    var expandedFiles = expandGlob(file, basePath);
+    if (jspm.precompiledFiles) {
+      return expandedFiles.map(function (expandedFile) {
+        return expandedFile.replace(jspm.precompiledFiles.src, jspm.precompiledFiles.out);
+      });
+    }
+
     files.push(createServedPattern(basePath + "/" + (file.pattern || file)));
-    return expandGlob(file, basePath);
+    return expandedFiles;
   }));
 
   // Add served files to files array
