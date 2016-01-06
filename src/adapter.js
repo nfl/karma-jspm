@@ -28,14 +28,16 @@
     var systemNormalize = System.normalize;
 
     // override the normalization function
-    System.normalize = function (name, parentName, parentAddress) {
-        return systemNormalize.call(this, name, parentName, parentAddress).then(function (url) {
-            if ((/\.(?:eot|gif|jpe?g|otf|png|svg|ttf|woff)\.js$/).test(url)) {
-                return url.replace(/\.js$/, "");
-            }
+    System.normalize = function normalize(name, parentName, parentAddress) {
+        return systemNormalize.call(this, name, parentName, parentAddress).then(
+            function normalizeCallback(url) {
+                if ((/\.(?:css|eot|gif|jpe?g|json|otf|png|swf|svg|ttf|woff)\.js$/).test(url)) {
+                    return url.replace(/\.js$/, "");
+                }
 
-            return url;
-        });
+                return url;
+            }
+        );
     };
 
     var stripExtension = typeof karma.config.jspm.stripExtension === 'boolean' ? karma.config.jspm.stripExtension : true;
