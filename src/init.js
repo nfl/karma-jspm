@@ -58,7 +58,7 @@ function getJspmPackageJson(dir) {
   return pjson;
 }
 
-module.exports = function(files, basePath, jspm, client) {
+module.exports = function(files, exclude, basePath, jspm, client) {
   // Initialize jspm config if it wasn't specified in karma.conf.js
   if(!jspm)
     jspm = {};
@@ -66,6 +66,8 @@ module.exports = function(files, basePath, jspm, client) {
     jspm.config = getJspmPackageJson(basePath).configFile || "config.js";
   if(!jspm.loadFiles)
     jspm.loadFiles = [];
+  if(!jspm.excludeFiles)
+    jspm.excludeFiles = [];
   if(!jspm.serveFiles)
     jspm.serveFiles = [];
   if(!jspm.packages)
@@ -104,14 +106,24 @@ module.exports = function(files, basePath, jspm, client) {
   files.unshift(createPattern(getLoaderPath('system-polyfills.src')));
   files.unshift(createPattern(getLoaderPath('system.src')));
 
-  // Loop through all of jspm.load_files and do two things
-  // 1. Add all the files as "served" files to the files array
+  // Add all exclude files to 'exclude'(Karma resolves 'exclude' path w/o expanding glob).
+  // Store expanded file list.
+  var excludeFiles = flatten(jspm.excludeFiles.map(function(file){
+    exclude.push(path.resolve(basePath, file));
+    return expandGlob(file, basePath);
+  }));
+
+  // Loop through all of jspm.load_files and do three things
+  // 1. Add all the files as "served" files to the files array.
   // 2. Expand out and globs to end up with actual files for jspm to load.
+  // 3. Filter out excluded files.
   //    Store that in client.jspm.expandedFiles
   client.jspm.expandedFiles = flatten(jspm.loadFiles.map(function(file){
     files.push(createServedPattern(basePath + "/" + (file.pattern || file), file.nocache || false));
     return expandGlob(file, basePath);
-  }));
+  })).filter(function(file){
+    return excludeFiles.indexOf(file) === -1;
+  });
 
   // Add served files to files array
   jspm.serveFiles.map(function(file){
