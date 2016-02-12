@@ -60,6 +60,15 @@ jspm: {
 }
 ```
 
+You may want to exclude files to load from a certain folder, you can add the glob pattern to `excludeFiles`:
+
+```js
+jspm: {
+    loadFiles: ['test/**/*.spec.js'],
+    excludeFiles: ['test/**/e2e/**/*.spec.js']
+}
+```
+
 By default karma-jspm ignores jspm's bundles configuration. To re-enable it, specify the `useBundles` option.
 
 ```js
