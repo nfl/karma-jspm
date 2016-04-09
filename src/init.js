@@ -31,8 +31,9 @@ var createPattern = function(path) {
   return {pattern: path, included: true, served: true, watched: false};
 };
 
-var createServedPattern = function(path){
-  return {pattern: path, included: false, served: true, watched: true};
+var createServedPattern = function(path, nocache){
+  nocache = nocache || false;
+  return {pattern: path, included: false, served: true, nocache:nocache, watched: true};
 };
 
 function getJspmPackageJson(dir) {
@@ -81,6 +82,7 @@ module.exports = function(files, basePath, jspm, client) {
   client.jspm.stripExtension = jspm.stripExtension;
 
   var packagesPath = path.normalize(basePath + '/' + jspm.packages + '/');
+  var browserPath = path.normalize(basePath + '/' + jspm.browser);
   var configPath = path.normalize(basePath + '/' + jspm.config);
 
   // Allow Karma to serve all files within jspm_packages.
@@ -101,6 +103,12 @@ module.exports = function(files, basePath, jspm, client) {
     }
   }
   files.unshift(createPattern(configPath));
+
+  // Needed for JSPM 0.17 beta
+  if(jspm.browser) {
+    files.unshift(createPattern(browserPath));
+  }
+
   files.unshift(createPattern(__dirname + '/adapter.js'));
   files.unshift(createPattern(getLoaderPath('system-polyfills.src')));
   files.unshift(createPattern(getLoaderPath('system.src')));
@@ -110,7 +118,7 @@ module.exports = function(files, basePath, jspm, client) {
   // 2. Expand out and globs to end up with actual files for jspm to load.
   //    Store that in client.jspm.expandedFiles
   client.jspm.expandedFiles = flatten(jspm.loadFiles.map(function(file){
-    files.push(createServedPattern(basePath + "/" + (file.pattern || file)));
+    files.push(createServedPattern(basePath + "/" + (file.pattern || file), file.nocache || false));
     return expandGlob(file, basePath);
   }));
 

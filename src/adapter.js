@@ -77,7 +77,7 @@
         promiseChain.then(function () {
             karma.start();
         }, function (e) {
-            throw e;
+            karma.error(e.name + ": " + e.message);
         });
     };
 
